@@ -1,5 +1,9 @@
+import dotenv from "dotenv"
 import express from "express"
 import cors from "cors"
+
+// Load environment variables
+dotenv.config()
 import { main } from "./controller/index.js"
 import {
   getAllJobs,
@@ -14,6 +18,7 @@ import {
 
 const app = express()
 const port = process.env.PORT || 4000
+const nodeEnv = process.env.NODE_ENV || 'development'
 
 app.use(express.json())
 app.use(cors())
@@ -35,4 +40,5 @@ app.put("/jobs/applications/:id/status", updateApplicationStatus)
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server running at http://localhost:${port}`)
+  console.log(`Environment: ${nodeEnv}`)
 })
