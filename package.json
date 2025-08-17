@@ -1,0 +1,59 @@
+{
+  "name": "biafotech-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "format": "prettier --write --ignore-path .gitignore ."
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": false,
+    "trailingComma": "all"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:react/recommended",
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "next/core-web-vitals"
+    ],
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "parserOptions": {
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "ecmaVersion": 12,
+      "sourceType": "module"
+    },
+    "plugins": [
+      "react",
+      "@typescript-eslint"
+    ],
+    "rules": {
+      "space-before-function-paren": "off",
+      "react/prop-types": "off",
+      "react/react-in-jsx-scope": "off"
+    }
+  },
+  "dependencies": {
+    "@prisma/client": "^5.12.1",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "ejs": "^3.1.9",
+    "express": "^4.19.2",
+    "mongoose": "^8.1.1",
+    "nodemon": "^3.0.3",
+    "prettier": "^3.1.1",
+    "prisma": "^5.12.1"
+  }
+}

@@ -1,0 +1,78 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = "postgresql://fahad:123456@127.0.0.1:5432/biafotech"
+}
+
+model Job {
+    id             Int      @id @default(autoincrement())
+    title          String
+    description    String
+    salary         String?
+    dateOpened     DateTime @default(now())
+    jobType        JobType  @default(FULL_TIME) // default to avoid migration error
+    workExperience String   @default("") // default to avoid migration error
+    city           String   @default("") // default to avoid migration error
+    state          String   @default("") // default to avoid migration error
+    country        String   @default("") // default to avoid migration error
+    zipCode        String?
+    requirements   Json // Array of strings
+    qualifications Json // Array of strings
+    createdBy      Int
+    isActive       Boolean  @default(true)
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+
+    // Relations
+    responsibilities JobResponsibility[]
+    applications     JobApplication[]
+}
+
+model JobResponsibility {
+    id     Int    @id @default(autoincrement())
+    title  String
+    points Json // Array of strings
+    jobId  Int
+    order  Int    @default(0)
+
+    // Relations
+    job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+    @@index([jobId])
+}
+
+model JobApplication {
+    id             Int               @id @default(autoincrement())
+    jobId          Int
+    applicantName  String
+    applicantEmail String
+    resumeUrl      String?
+    coverLetter    String?
+    status         ApplicationStatus @default(PENDING)
+    createdAt      DateTime          @default(now())
+    updatedAt      DateTime          @updatedAt
+
+    // Relations
+    job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+    @@index([jobId])
+    @@index([status])
+}
+
+enum JobType {
+    FULL_TIME
+    PART_TIME
+    CONTRACT
+    INTERNSHIP
+}
+
+enum ApplicationStatus {
+    PENDING
+    REVIEWED
+    INTERVIEW
+    REJECTED
+    HIRED
+}
