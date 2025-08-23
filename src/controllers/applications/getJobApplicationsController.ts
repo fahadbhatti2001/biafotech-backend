@@ -1,10 +1,10 @@
 import { Request, Response } from "express"
-import { prisma } from "../config/database.js"
+import { prisma } from "../../config/database.js"
 import {
   transformApplicationForResponse,
   transformApplicationStatusForDB,
-} from "../utils/applicationTransformers.js"
-import { ApplicationsQuery } from "../types/index.js"
+} from "../../utils/applicationTransformers.js"
+import { ApplicationsQuery } from "../../types/index.js"
 import { ApplicationStatus } from "@prisma/client"
 
 // GET /jobs/applications - Fetch job applications with filters

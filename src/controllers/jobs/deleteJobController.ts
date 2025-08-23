@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { prisma } from "../config/database.js"
+import { prisma } from "../../config/database.js"
 
 // DELETE /jobs/:id - Delete job
 export const deleteJob = async (

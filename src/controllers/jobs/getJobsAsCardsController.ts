@@ -1,19 +1,19 @@
 import { Request, Response } from "express"
-import { prisma } from "../config/database.js"
+import { prisma } from "../../config/database.js"
 import {
-  transformJobForResponse,
+  transformJobToCardData,
   transformJobTypeForDB,
-} from "../utils/jobTransformers.js"
+} from "../../utils/jobTransformers.js"
 import {
   JobsQuery,
   PaginationResponse,
-  TransformedJob,
-} from "../types/index.js"
+  JobCardData,
+} from "../../types/index.js"
 import { Prisma, JobType } from "@prisma/client"
 
-// GET /jobs - Fetch all jobs with optional filters and pagination
-export const getAllJobs = async (
-  req: Request<{}, PaginationResponse<TransformedJob>, {}, JobsQuery>,
+// GET /jobs/cards - Fetch jobs in JobCardData format for frontend display
+export const getJobsAsCards = async (
+  req: Request<{}, PaginationResponse<JobCardData>, {}, JobsQuery>,
   res: Response,
 ): Promise<Response> => {
   try {
@@ -22,8 +22,6 @@ export const getAllJobs = async (
       limit = "10",
       order = "DESC",
       orderBy = "createdAt",
-      category,
-      location,
       type,
       city,
       state,
@@ -48,11 +46,24 @@ export const getAllJobs = async (
             },
           },
           { city: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { state: { contains: search, mode: Prisma.QueryMode.insensitive } },
         ],
       }),
       ...(type && { jobType: transformJobTypeForDB(type) as JobType }),
-      ...(location && {
-        city: { contains: location, mode: Prisma.QueryMode.insensitive },
+      ...(city && {
+        city: { contains: city, mode: Prisma.QueryMode.insensitive },
+      }),
+      ...(state && {
+        state: { contains: state, mode: Prisma.QueryMode.insensitive },
+      }),
+      ...(country && {
+        country: { contains: country, mode: Prisma.QueryMode.insensitive },
+      }),
+      ...(workExperience && {
+        workExperience: {
+          contains: workExperience,
+          mode: Prisma.QueryMode.insensitive,
+        },
       }),
     }
 
@@ -64,22 +75,14 @@ export const getAllJobs = async (
       where,
       skip,
       take,
-      orderBy: { [orderBy]: order.toLowerCase() === "desc" ? "desc" : "asc" },
-      include: {
-        responsibilities: {
-          orderBy: { order: "asc" },
-        },
-        _count: {
-          select: { applications: true },
-        },
-      },
+      orderBy: { [orderBy]: order.toLowerCase() },
     })
 
-    const transformedJobs = jobs.map((job) => transformJobForResponse(job))
+    const jobCards = jobs.map((job) => transformJobToCardData(job))
 
     return res.json({
       count: totalCount,
-      rows: transformedJobs,
+      rows: jobCards,
       pagination: {
         currentPage: parseInt(pageNumber),
         totalPages: Math.ceil(totalCount / take),
@@ -88,7 +91,7 @@ export const getAllJobs = async (
       },
     })
   } catch (error) {
-    console.error("Error fetching jobs:", error)
-    return res.status(500).json({ error: "Failed to fetch jobs" })
+    console.error("Error fetching job cards:", error)
+    return res.status(500).json({ error: "Failed to fetch job cards" })
   }
 }

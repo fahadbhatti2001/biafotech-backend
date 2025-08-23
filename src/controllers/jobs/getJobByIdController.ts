@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
-import { prisma } from "../config/database.js"
-import { transformJobForResponse } from "../utils/jobTransformers.js"
-import { TransformedJob } from "../types/index.js"
+import { prisma } from "../../config/database.js"
+import { transformJobForResponse } from "../../utils/jobTransformers.js"
+import { TransformedJob } from "../../types/index.js"
 
 // GET /jobs/:id - Fetch single job by ID
 export const getJobById = async (

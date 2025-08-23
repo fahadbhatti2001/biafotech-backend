@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { Response } from "express"
-import { prisma } from "../config/database.js"
-import { AuthRequest } from "../types/index.js"
+import { prisma } from "../../config/database.js"
+import { AuthRequest } from "../../types/index.js"
 
 export const login = async (
   req: AuthRequest,

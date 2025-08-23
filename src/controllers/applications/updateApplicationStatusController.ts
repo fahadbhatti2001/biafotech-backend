@@ -1,10 +1,10 @@
 import { Response } from "express"
-import { prisma } from "../config/database.js"
+import { prisma } from "../../config/database.js"
 import {
   transformApplicationForResponse,
   transformApplicationStatusForDB,
-} from "../utils/applicationTransformers.js"
-import { ApplicationStatusRequest } from "../types/index.js"
+} from "../../utils/applicationTransformers.js"
+import { ApplicationStatusRequest } from "../../types/index.js"
 import { ApplicationStatus } from "@prisma/client"
 
 // PUT /jobs/applications/:id/status - Update application status

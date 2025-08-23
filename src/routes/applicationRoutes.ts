@@ -1,13 +1,19 @@
 import express from "express"
-import { applyToJob } from "../controllers/applyToJobController.js"
-import { getJobApplications } from "../controllers/getJobApplicationsController.js"
-import { updateApplicationStatus } from "../controllers/updateApplicationStatusController.js"
+import {
+  applyToJob,
+  getJobApplications,
+  updateApplicationStatus,
+} from "../controllers/applications/index.js"
+import { APPLICATION_ROUTES } from "../constants/routes.js"
 
 const router = express.Router()
 
 // Job application routes
-router.post("/jobs/:id/apply", applyToJob)
-router.get("/jobs/applications", getJobApplications)
-router.put("/jobs/applications/:id/status", updateApplicationStatus)
+router.post(APPLICATION_ROUTES.APPLY_TO_JOB, applyToJob)
+router.get(APPLICATION_ROUTES.GET_JOB_APPLICATIONS, getJobApplications)
+router.put(
+  APPLICATION_ROUTES.UPDATE_APPLICATION_STATUS,
+  updateApplicationStatus,
+)
 
 export { router as applicationRoutes }

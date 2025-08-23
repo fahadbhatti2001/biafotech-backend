@@ -10,12 +10,13 @@ A modern, scalable Node.js backend built with **TypeScript**, **Express**, and *
 ## 🌟 Key Features
 
 - ✅ **Full TypeScript Support** - Complete type safety with strict checking
-- ✅ **Clean Architecture** - One function per file principle
+- ✅ **Clean Architecture** - Organized controller structure with feature folders
+- ✅ **Centralized Routes** - Route constants for maintainable API structure
 - ✅ **Type-Safe Database** - Prisma ORM with TypeScript integration
 - ✅ **Modern Development** - Hot reloading, source maps, and build optimization
 - ✅ **Production Ready** - Compiled JavaScript output with declarations
-- ✅ **Comprehensive API** - Job management and application system
-- ✅ **Scalable Structure** - Easy to extend and maintain
+- ✅ **Comprehensive API** - Job management and application system with proper base paths
+- ✅ **Scalable Structure** - Easy to extend and maintain with organized folders
 
 ## 📋 Table of Contents
 
@@ -59,18 +60,28 @@ biafotech-backend/
 │   │   └── index.ts                  # Comprehensive type definitions
 │   ├── config/
 │   │   └── database.ts               # Database configuration
-│   ├── controllers/                  # Individual controller functions
-│   │   ├── healthController.ts       # Health check endpoint
-│   │   ├── authController.ts         # User authentication
-│   │   ├── getAllJobsController.ts   # Job listing with filters
-│   │   ├── getJobByIdController.ts   # Single job retrieval
-│   │   ├── createJobController.ts    # Job creation
-│   │   ├── updateJobController.ts    # Job updates
-│   │   ├── deleteJobController.ts    # Job soft deletion
-│   │   ├── getJobsAsCardsController.ts           # Job cards format
-│   │   ├── applyToJobController.ts               # Job applications
-│   │   ├── getJobApplicationsController.ts       # Application listing
-│   │   └── updateApplicationStatusController.ts  # Status updates
+│   ├── constants/                    # Application constants
+│   │   └── routes.ts                 # Centralized route definitions
+│   ├── controllers/                  # Organized controller functions
+│   │   ├── auth/                     # Authentication controllers
+│   │   │   ├── authController.ts     # User authentication logic
+│   │   │   └── index.ts              # Auth controller exports
+│   │   ├── health/                   # Health check controllers
+│   │   │   ├── healthController.ts   # Health check endpoint
+│   │   │   └── index.ts              # Health controller exports
+│   │   ├── jobs/                     # Job management controllers
+│   │   │   ├── getAllJobsController.ts           # Job listing with filters
+│   │   │   ├── getJobByIdController.ts           # Single job retrieval
+│   │   │   ├── createJobController.ts            # Job creation
+│   │   │   ├── updateJobController.ts            # Job updates
+│   │   │   ├── deleteJobController.ts            # Job soft deletion
+│   │   │   ├── getJobsAsCardsController.ts       # Job cards format
+│   │   │   └── index.ts                          # Job controller exports
+│   │   └── applications/             # Application controllers
+│   │       ├── applyToJobController.ts           # Job applications
+│   │       ├── getJobApplicationsController.ts   # Application listing
+│   │       ├── updateApplicationStatusController.ts # Status updates
+│   │       └── index.ts                          # Application controller exports
 │   ├── routes/                       # Route definitions by resource
 │   │   ├── healthRoutes.ts           # Health check routes
 │   │   ├── authRoutes.ts             # Authentication routes
@@ -180,11 +191,14 @@ npm run seed            # Seed database with sample data
 
 ### **Adding New Features**
 
-1. **Create controller** in `src/controllers/newFeatureController.ts`
-2. **Add routes** in `src/routes/newFeatureRoutes.ts`
-3. **Define types** in `src/types/index.ts`
-4. **Add transformers** if needed in `src/utils/`
-5. **Update main app** in `src/index.ts` to include routes
+1. **Create feature folder** in `src/controllers/newFeature/`
+2. **Create controller** in `src/controllers/newFeature/newFeatureController.ts`
+3. **Create index file** in `src/controllers/newFeature/index.ts`
+4. **Add routes** in `src/routes/newFeatureRoutes.ts`
+5. **Add route constants** in `src/constants/routes.ts`
+6. **Define types** in `src/types/index.ts`
+7. **Add transformers** if needed in `src/utils/`
+8. **Update main app** in `src/index.ts` to include routes
 
 ## 📚 API Documentation
 
@@ -193,10 +207,19 @@ npm run seed            # Seed database with sample data
 - **Development**: `http://localhost:4000`
 - **Production**: `https://your-app.vercel.app`
 
+### **API Endpoints Overview**
+
+| Category       | Base Path | Description                |
+| -------------- | --------- | -------------------------- |
+| Health         | `/`       | Health check endpoint      |
+| Authentication | `/auth`   | User authentication        |
+| Jobs           | `/jobs`   | Job management operations  |
+| Applications   | `/`       | Job application operations |
+
 ### **Authentication**
 
 ```http
-POST /login
+POST /auth/login
 Content-Type: application/json
 
 {
@@ -459,6 +482,14 @@ npm run build
 - ✅ **Production-ready** TypeScript build pipeline
 - ✅ **Zero breaking changes** - maintains API compatibility
 
+### **v1.1.0 - Architecture Reorganization** (Latest)
+
+- ✅ **Organized Controller Structure** - Controllers moved into feature-based folders
+- ✅ **Route Constants** - Centralized route definitions in `src/constants/routes.ts`
+- ✅ **Proper Base Paths** - Clear API structure with `/auth`, `/jobs` base routes
+- ✅ **Index Files** - Clean exports from each controller folder
+- ✅ **Maintainable Imports** - Updated all import paths for new structure
+
 ### **v1.0.0 - Initial Restructure**
 
 - ✅ **"One function per file"** architecture
@@ -466,13 +497,13 @@ npm run build
 - ✅ **Modular design** for scalability
 - ✅ **Prisma ORM integration** for database operations
 
-### **Benefits of TypeScript Migration**
+### **Benefits of Recent Improvements**
 
-1. **Type Safety**: Eliminated runtime type errors
-2. **Developer Experience**: Better autocomplete and error detection
-3. **Maintainability**: Self-documenting code with clear interfaces
-4. **Scalability**: Easier to add features and refactor safely
-5. **Team Collaboration**: Clear contracts between modules
+1. **Better Organization**: Feature-based folder structure for controllers
+2. **Centralized Routes**: All API paths defined in constants for easy maintenance
+3. **Clear API Structure**: Proper base paths that identify functionality
+4. **Scalable Architecture**: Easy to add new features following established patterns
+5. **Developer Experience**: Cleaner imports and better code organization
 
 ## 🤝 Contributing
 

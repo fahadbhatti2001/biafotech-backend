@@ -1,19 +1,22 @@
 import express from "express"
-import { getAllJobs } from "../controllers/getAllJobsController.js"
-import { getJobById } from "../controllers/getJobByIdController.js"
-import { createJob } from "../controllers/createJobController.js"
-import { updateJob } from "../controllers/updateJobController.js"
-import { deleteJob } from "../controllers/deleteJobController.js"
-import { getJobsAsCards } from "../controllers/getJobsAsCardsController.js"
+import {
+  getAllJobs,
+  getJobById,
+  createJob,
+  updateJob,
+  deleteJob,
+  getJobsAsCards,
+} from "../controllers/jobs/index.js"
+import { JOB_ROUTES } from "../constants/routes.js"
 
 const router = express.Router()
 
 // Job routes
-router.get("/", getAllJobs)
-router.get("/cards", getJobsAsCards) // Must come before /:id route
-router.get("/:id", getJobById)
-router.post("/", createJob)
-router.put("/:id", updateJob)
-router.delete("/:id", deleteJob)
+router.get(JOB_ROUTES.GET_ALL, getAllJobs)
+router.get(JOB_ROUTES.GET_CARDS, getJobsAsCards) // Must come before /:id route
+router.get(JOB_ROUTES.GET_BY_ID, getJobById)
+router.post(JOB_ROUTES.CREATE, createJob)
+router.put(JOB_ROUTES.UPDATE, updateJob)
+router.delete(JOB_ROUTES.DELETE, deleteJob)
 
 export { router as jobRoutes }

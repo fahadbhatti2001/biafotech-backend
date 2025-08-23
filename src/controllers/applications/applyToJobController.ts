@@ -1,7 +1,7 @@
 import { Response } from "express"
-import { prisma } from "../config/database.js"
-import { transformApplicationForResponse } from "../utils/applicationTransformers.js"
-import { JobApplicationRequest } from "../types/index.js"
+import { prisma } from "../../config/database.js"
+import { transformApplicationForResponse } from "../../utils/applicationTransformers.js"
+import { JobApplicationRequest } from "../../types/index.js"
 
 // POST /jobs/:id/apply - Apply to a job
 export const applyToJob = async (

@@ -1,15 +1,19 @@
 import { Request, Response } from "express"
-import { prisma } from "../config/database.js"
+import { prisma } from "../../config/database.js"
 import {
-  transformJobToCardData,
+  transformJobForResponse,
   transformJobTypeForDB,
-} from "../utils/jobTransformers.js"
-import { JobsQuery, PaginationResponse, JobCardData } from "../types/index.js"
+} from "../../utils/jobTransformers.js"
+import {
+  JobsQuery,
+  PaginationResponse,
+  TransformedJob,
+} from "../../types/index.js"
 import { Prisma, JobType } from "@prisma/client"
 
-// GET /jobs/cards - Fetch jobs in JobCardData format for frontend display
-export const getJobsAsCards = async (
-  req: Request<{}, PaginationResponse<JobCardData>, {}, JobsQuery>,
+// GET /jobs - Fetch all jobs with optional filters and pagination
+export const getAllJobs = async (
+  req: Request<{}, PaginationResponse<TransformedJob>, {}, JobsQuery>,
   res: Response,
 ): Promise<Response> => {
   try {
@@ -18,6 +22,8 @@ export const getJobsAsCards = async (
       limit = "10",
       order = "DESC",
       orderBy = "createdAt",
+      category,
+      location,
       type,
       city,
       state,
@@ -42,24 +48,11 @@ export const getJobsAsCards = async (
             },
           },
           { city: { contains: search, mode: Prisma.QueryMode.insensitive } },
-          { state: { contains: search, mode: Prisma.QueryMode.insensitive } },
         ],
       }),
       ...(type && { jobType: transformJobTypeForDB(type) as JobType }),
-      ...(city && {
-        city: { contains: city, mode: Prisma.QueryMode.insensitive },
-      }),
-      ...(state && {
-        state: { contains: state, mode: Prisma.QueryMode.insensitive },
-      }),
-      ...(country && {
-        country: { contains: country, mode: Prisma.QueryMode.insensitive },
-      }),
-      ...(workExperience && {
-        workExperience: {
-          contains: workExperience,
-          mode: Prisma.QueryMode.insensitive,
-        },
+      ...(location && {
+        city: { contains: location, mode: Prisma.QueryMode.insensitive },
       }),
     }
 
@@ -71,14 +64,22 @@ export const getJobsAsCards = async (
       where,
       skip,
       take,
-      orderBy: { [orderBy]: order.toLowerCase() },
+      orderBy: { [orderBy]: order.toLowerCase() === "desc" ? "desc" : "asc" },
+      include: {
+        responsibilities: {
+          orderBy: { order: "asc" },
+        },
+        _count: {
+          select: { applications: true },
+        },
+      },
     })
 
-    const jobCards = jobs.map((job) => transformJobToCardData(job))
+    const transformedJobs = jobs.map((job) => transformJobForResponse(job))
 
     return res.json({
       count: totalCount,
-      rows: jobCards,
+      rows: transformedJobs,
       pagination: {
         currentPage: parseInt(pageNumber),
         totalPages: Math.ceil(totalCount / take),
@@ -87,7 +88,7 @@ export const getJobsAsCards = async (
       },
     })
   } catch (error) {
-    console.error("Error fetching job cards:", error)
-    return res.status(500).json({ error: "Failed to fetch job cards" })
+    console.error("Error fetching jobs:", error)
+    return res.status(500).json({ error: "Failed to fetch jobs" })
   }
 }

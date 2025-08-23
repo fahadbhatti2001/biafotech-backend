@@ -5,6 +5,7 @@ import { healthRoutes } from "./routes/healthRoutes.js"
 import { authRoutes } from "./routes/authRoutes.js"
 import { jobRoutes } from "./routes/jobRoutes.js"
 import { applicationRoutes } from "./routes/applicationRoutes.js"
+import { API_ROUTES } from "./constants/routes.js"
 
 // Load environment variables
 dotenv.config()
@@ -16,11 +17,11 @@ const nodeEnv: string = process.env.NODE_ENV || "development"
 app.use(express.json())
 app.use(cors())
 
-// Mount routes
-app.use("/", healthRoutes)
-app.use("/", authRoutes)
-app.use("/jobs", jobRoutes)
-app.use("/", applicationRoutes)
+// Mount routes with proper base paths
+app.use(API_ROUTES.HEALTH, healthRoutes)
+app.use(API_ROUTES.AUTH, authRoutes)
+app.use(API_ROUTES.JOBS, jobRoutes)
+app.use("/", applicationRoutes) // Applications routes are job-related, so they stay at root level
 
 app.listen(port, "0.0.0.0", (): void => {
   console.log(`Server running at http://localhost:${port}`)
