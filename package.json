@@ -1,15 +1,22 @@
 {
   "name": "biafotech-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "type": "module",
   "engines": {
     "node": "18.x"
   },
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "format": "prettier --write --ignore-path .gitignore ."
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "dev:watch": "tsx watch src/index.ts",
+    "format": "prettier --write --ignore-path .gitignore .",
+    "seed": "node prisma/seed.js",
+    "type-check": "tsc --noEmit"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "prettier": {
     "semi": false,
@@ -47,14 +54,26 @@
   },
   "dependencies": {
     "@prisma/client": "^5.12.1",
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "ejs": "^3.1.9",
     "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.1.1",
-    "nodemon": "^3.0.3",
     "prettier": "^3.1.1",
     "prisma": "^5.12.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.3.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2"
   }
 }
