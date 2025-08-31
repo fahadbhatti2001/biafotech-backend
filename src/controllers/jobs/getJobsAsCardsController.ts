@@ -1,16 +1,17 @@
 import { Request, Response } from "express"
 import { prisma } from "../../config/database.js"
-import { transformJobToCardData, transformJobTypeForDB } from "../../utils"
+import { transformJobForResponse, transformJobTypeForDB } from "../../utils"
 import {
   JobsQuery,
   PaginationResponse,
-  JobCardData,
+  TransformedJob,
+  JobWithResponsibilities,
 } from "../../types/index.js"
 import { Prisma, JobType } from "@prisma/client"
 
-// GET /jobs/cards - Fetch jobs in JobCardData format for frontend display
+// GET /jobs/cards - Fetch jobs with full data for frontend display
 export const getJobsAsCards = async (
-  req: Request<{}, PaginationResponse<JobCardData>, {}, JobsQuery>,
+  req: Request<{}, PaginationResponse<TransformedJob>, {}, JobsQuery>,
   res: Response,
 ): Promise<Response> => {
   try {
@@ -67,19 +68,29 @@ export const getJobsAsCards = async (
     // Get total count for pagination
     const totalCount = await prisma.job.count({ where })
 
-    // Get jobs with pagination and ordering
+    // Get jobs with pagination, ordering, and include relationships
     const jobs = await prisma.job.findMany({
       where,
       skip,
       take,
       orderBy: { [orderBy]: order.toLowerCase() },
+      include: {
+        responsibilities: {
+          orderBy: { order: "asc" },
+        },
+        _count: {
+          select: {
+            applications: true,
+          },
+        },
+      },
     })
 
-    const jobCards = jobs.map((job) => transformJobToCardData(job))
+    const transformedJobs = jobs.map((job) => transformJobForResponse(job as JobWithResponsibilities))
 
     return res.json({
       count: totalCount,
-      rows: jobCards,
+      rows: transformedJobs,
       pagination: {
         currentPage: parseInt(pageNumber),
         totalPages: Math.ceil(totalCount / take),
@@ -88,7 +99,7 @@ export const getJobsAsCards = async (
       },
     })
   } catch (error) {
-    console.error("Error fetching job cards:", error)
-    return res.status(500).json({ error: "Failed to fetch job cards" })
+    console.error("Error fetching jobs with full data:", error)
+    return res.status(500).json({ error: "Failed to fetch jobs with full data" })
   }
 }
