@@ -1,9 +1,6 @@
 import { Response } from "express"
 import { prisma } from "../../config/database.js"
-import {
-  transformJobForResponse,
-  transformJobTypeForDB,
-} from "../../utils/jobTransformers.js"
+import { transformJobForResponse, transformJobTypeForDB } from "../../utils"
 import { JobUpdateRequest } from "../../types/index.js"
 import { JobType, Prisma } from "@prisma/client"
 
@@ -15,11 +12,19 @@ export const updateJob = async (
   try {
     const { id } = req.params
     const {
-      jobInformation = {},
+      title,
+      description,
+      salary,
+      jobType,
+      workExperience,
+      city,
+      state,
+      country,
+      zipCode,
       responsibilities,
       requirements,
       qualifications,
-      isActive,
+      createdBy,
     } = req.body
 
     // Check if job exists
@@ -31,30 +36,22 @@ export const updateJob = async (
       return res.status(404).json({ error: "Job not found" })
     }
 
-    // Build update data object from jobInformation
+    // Build update data object (only include fields that are provided)
     const updateData: any = {
-      ...(jobInformation.title && { title: jobInformation.title }),
-      ...(jobInformation.description && {
-        description: jobInformation.description,
+      ...(title && { title }),
+      ...(description && { description }),
+      ...(salary !== undefined && { salary }),
+      ...(jobType && {
+        jobType: transformJobTypeForDB(jobType) as JobType,
       }),
-      ...(jobInformation.salary !== undefined && {
-        salary: jobInformation.salary,
-      }),
-      ...(jobInformation.jobType && {
-        jobType: transformJobTypeForDB(jobInformation.jobType) as JobType,
-      }),
-      ...(jobInformation.workExperience && {
-        workExperience: jobInformation.workExperience,
-      }),
-      ...(jobInformation.city && { city: jobInformation.city }),
-      ...(jobInformation.state && { state: jobInformation.state }),
-      ...(jobInformation.country && { country: jobInformation.country }),
-      ...(jobInformation.zipCode !== undefined && {
-        zipCode: jobInformation.zipCode,
-      }),
+      ...(workExperience && { workExperience }),
+      ...(city && { city }),
+      ...(state && { state }),
+      ...(country && { country }),
+      ...(zipCode !== undefined && { zipCode }),
       ...(requirements && { requirements }),
       ...(qualifications && { qualifications }),
-      ...(isActive !== undefined && { isActive }),
+      ...(createdBy !== undefined && { createdBy: parseInt(String(createdBy)) }),
     }
 
     // Handle responsibilities update if provided

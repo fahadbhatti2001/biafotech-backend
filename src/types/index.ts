@@ -51,24 +51,22 @@ export interface JobUpdateRequest extends Request {
     id: string
   }
   body: {
-    jobInformation?: {
-      title?: string
-      description?: string
-      salary?: string
-      jobType?: string
-      workExperience?: string
-      city?: string
-      state?: string
-      country?: string
-      zipCode?: string
-    }
+    title?: string
+    description?: string
+    salary?: string
+    jobType?: string
+    workExperience?: string
+    city?: string
+    state?: string
+    country?: string
+    zipCode?: string
     responsibilities?: Array<{
       title: string
       points: string[]
     }>
     requirements?: string[]
     qualifications?: string[]
-    isActive?: boolean
+    createdBy?: number
   }
 }
 
