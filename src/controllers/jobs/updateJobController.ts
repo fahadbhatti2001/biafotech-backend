@@ -1,6 +1,9 @@
 import { Response } from "express"
 import { prisma } from "../../config/database.js"
-import { transformJobForResponse, transformJobTypeForDB } from "../../utils"
+import {
+  transformJobForResponse,
+  transformJobTypeForDB,
+} from "../../utils/jobTransformers.js"
 import { JobUpdateRequest } from "../../types/index.js"
 import { JobType, Prisma } from "@prisma/client"
 
@@ -51,7 +54,9 @@ export const updateJob = async (
       ...(zipCode !== undefined && { zipCode }),
       ...(requirements && { requirements }),
       ...(qualifications && { qualifications }),
-      ...(createdBy !== undefined && { createdBy: parseInt(String(createdBy)) }),
+      ...(createdBy !== undefined && {
+        createdBy: parseInt(String(createdBy)),
+      }),
     }
 
     // Handle responsibilities update if provided

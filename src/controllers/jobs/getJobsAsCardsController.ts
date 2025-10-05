@@ -1,6 +1,9 @@
 import { Request, Response } from "express"
 import { prisma } from "../../config/database.js"
-import { transformJobForResponse, transformJobTypeForDB } from "../../utils"
+import {
+  transformJobForResponse,
+  transformJobTypeForDB,
+} from "../../utils/jobTransformers.js"
 import {
   JobsQuery,
   PaginationResponse,
@@ -86,7 +89,9 @@ export const getJobsAsCards = async (
       },
     })
 
-    const transformedJobs = jobs.map((job) => transformJobForResponse(job as JobWithResponsibilities))
+    const transformedJobs = jobs.map((job) =>
+      transformJobForResponse(job as JobWithResponsibilities),
+    )
 
     return res.json({
       count: totalCount,
@@ -100,6 +105,8 @@ export const getJobsAsCards = async (
     })
   } catch (error) {
     console.error("Error fetching jobs with full data:", error)
-    return res.status(500).json({ error: "Failed to fetch jobs with full data" })
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch jobs with full data" })
   }
 }

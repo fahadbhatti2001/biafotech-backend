@@ -1,7 +1,7 @@
 import { Response } from "express"
 import { Job, JobType } from "@prisma/client"
 import { prisma } from "../../config/database.js"
-import { transformJobTypeForDB } from "../../utils"
+import { transformJobTypeForDB } from "../../utils/jobTransformers.js"
 import { JobCreateRequest } from "../../types/index.js"
 
 // POST /jobs - Create new job

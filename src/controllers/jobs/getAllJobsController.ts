@@ -1,6 +1,9 @@
 import { Request, Response } from "express"
 import { prisma } from "../../config/database.js"
-import { transformJobForResponse, transformJobTypeForDB } from "../../utils"
+import {
+  transformJobForResponse,
+  transformJobTypeForDB,
+} from "../../utils/jobTransformers.js"
 import {
   JobsQuery,
   PaginationResponse,

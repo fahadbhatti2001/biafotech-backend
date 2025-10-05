@@ -1,6 +1,6 @@
 import { Response } from "express"
 import { prisma } from "../../config/database.js"
-import { transformApplicationForResponse } from "../../utils"
+import { transformApplicationForResponse } from "../../utils/applicationTransformers.js"
 import { JobApplicationRequest } from "../../types/index.js"
 
 // POST /jobs/:id/apply - Apply to a job

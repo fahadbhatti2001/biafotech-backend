@@ -3,7 +3,7 @@ import { prisma } from "../../config/database.js"
 import {
   transformApplicationForResponse,
   transformApplicationStatusForDB,
-} from "../../utils"
+} from "../../utils/applicationTransformers.js"
 import { ApplicationStatusRequest } from "../../types/index.js"
 import { ApplicationStatus } from "@prisma/client"
 
