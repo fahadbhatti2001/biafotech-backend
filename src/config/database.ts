@@ -1,3 +1,3 @@
-import { PrismaClient } from "@prisma/client"
+import { sequelize, syncDatabase } from "../models/index.js"
 
-export const prisma = new PrismaClient()
+export { sequelize, syncDatabase }

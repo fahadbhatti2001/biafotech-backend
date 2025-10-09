@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
-import { prisma } from "../../config/database.js"
+import { Op } from "sequelize"
+import { Job, JobResponsibility, JobApplication, JobType } from "../../models/index.js"
 import {
   transformJobForResponse,
   transformJobTypeForDB,
@@ -9,7 +10,6 @@ import {
   PaginationResponse,
   TransformedJob,
 } from "../../types/index.js"
-import { Prisma, JobType } from "@prisma/client"
 
 // GET /jobs - Fetch all jobs with optional filters and pagination
 export const getAllJobs = async (
@@ -32,58 +32,74 @@ export const getAllJobs = async (
       search,
     } = req.query
 
-    const skip = (parseInt(pageNumber) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const offset = (parseInt(pageNumber) - 1) * parseInt(limit)
+    const limitNum = parseInt(limit)
 
     // Build where clause for filtering
-    const where: Prisma.JobWhereInput = {
+    const where: any = {
       isActive: true,
-      ...(search && {
-        OR: [
-          { title: { contains: search, mode: Prisma.QueryMode.insensitive } },
-          {
-            description: {
-              contains: search,
-              mode: Prisma.QueryMode.insensitive,
-            },
-          },
-          { city: { contains: search, mode: Prisma.QueryMode.insensitive } },
-        ],
-      }),
-      ...(type && { jobType: transformJobTypeForDB(type) as JobType }),
-      ...(location && {
-        city: { contains: location, mode: Prisma.QueryMode.insensitive },
-      }),
+    }
+
+    if (search) {
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } },
+        { city: { [Op.iLike]: `%${search}%` } },
+      ]
+    }
+
+    if (type) {
+      where.jobType = transformJobTypeForDB(type) as JobType
+    }
+
+    if (location) {
+      where.city = { [Op.iLike]: `%${location}%` }
     }
 
     // Get total count for pagination
-    const totalCount = await prisma.job.count({ where })
+    const totalCount = await Job.count({ where })
 
     // Get jobs with pagination and ordering
-    const jobs = await prisma.job.findMany({
+    const jobs = await Job.findAll({
       where,
-      skip,
-      take,
-      orderBy: { [orderBy]: order.toLowerCase() === "desc" ? "desc" : "asc" },
-      include: {
-        responsibilities: {
-          orderBy: { order: "asc" },
+      offset,
+      limit: limitNum,
+      order: [[orderBy, order.toUpperCase()]],
+      include: [
+        {
+          model: JobResponsibility,
+          as: "responsibilities",
+          attributes: ["id", "title", "points", "order"],
         },
-        _count: {
-          select: { applications: true },
-        },
-      },
+      ],
+      attributes: {
+        include: [
+          [
+            // Add applications count
+            Job.sequelize!.literal(`(
+              SELECT COUNT(*)
+              FROM "JobApplication"
+              WHERE "JobApplication"."jobId" = "Job"."id"
+            )`),
+            "applicationsCount"
+          ]
+        ]
+      }
     })
 
-    const transformedJobs = jobs.map((job) => transformJobForResponse(job))
+    const transformedJobs = jobs.map((job: any) => {
+      const jobData = job.toJSON()
+      jobData._count = { applications: parseInt(jobData.applicationsCount) || 0 }
+      return transformJobForResponse(jobData)
+    })
 
     return res.json({
       count: totalCount,
       rows: transformedJobs,
       pagination: {
         currentPage: parseInt(pageNumber),
-        totalPages: Math.ceil(totalCount / take),
-        limit: take,
+        totalPages: Math.ceil(totalCount / limitNum),
+        limit: limitNum,
         totalCount,
       },
     })

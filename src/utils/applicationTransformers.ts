@@ -1,4 +1,4 @@
-import { JobApplication, Prisma } from "@prisma/client"
+import { JobApplication } from "../models/index.js"
 import { TransformedApplication } from "../types/index.js"
 
 // Helper function to transform application status for API responses

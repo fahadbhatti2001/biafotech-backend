@@ -1,11 +1,10 @@
 import { Response } from "express"
-import { prisma } from "../../config/database.js"
+import { Job, JobType, JobResponsibility } from "../../models/index.js"
 import {
   transformJobForResponse,
   transformJobTypeForDB,
 } from "../../utils/jobTransformers.js"
 import { JobUpdateRequest } from "../../types/index.js"
-import { JobType, Prisma } from "@prisma/client"
 
 // PUT /jobs/:id - Update existing job
 export const updateJob = async (
@@ -31,61 +30,62 @@ export const updateJob = async (
     } = req.body
 
     // Check if job exists
-    const existingJob = await prisma.job.findUnique({
-      where: { id: parseInt(id) },
-    })
+    const existingJob = await Job.findByPk(parseInt(id))
 
     if (!existingJob) {
       return res.status(404).json({ error: "Job not found" })
     }
 
     // Build update data object (only include fields that are provided)
-    const updateData: any = {
-      ...(title && { title }),
-      ...(description && { description }),
-      ...(salary !== undefined && { salary }),
-      ...(jobType && {
-        jobType: transformJobTypeForDB(jobType) as JobType,
-      }),
-      ...(workExperience && { workExperience }),
-      ...(city && { city }),
-      ...(state && { state }),
-      ...(country && { country }),
-      ...(zipCode !== undefined && { zipCode }),
-      ...(requirements && { requirements }),
-      ...(qualifications && { qualifications }),
-      ...(createdBy !== undefined && {
-        createdBy: parseInt(String(createdBy)),
-      }),
-    }
+    const updateData: any = {}
+    if (title) updateData.title = title
+    if (description) updateData.description = description
+    if (salary !== undefined) updateData.salary = salary
+    if (jobType) updateData.jobType = transformJobTypeForDB(jobType) as JobType
+    if (workExperience) updateData.workExperience = workExperience
+    if (city) updateData.city = city
+    if (state) updateData.state = state
+    if (country) updateData.country = country
+    if (zipCode !== undefined) updateData.zipCode = zipCode
+    if (requirements) updateData.requirements = requirements
+    if (qualifications) updateData.qualifications = qualifications
+    if (createdBy !== undefined) updateData.createdBy = parseInt(String(createdBy))
+
+    // Update job
+    await existingJob.update(updateData)
 
     // Handle responsibilities update if provided
     if (responsibilities !== undefined) {
-      // Delete existing responsibilities and create new ones
-      await prisma.jobResponsibility.deleteMany({
+      // Delete existing responsibilities
+      await JobResponsibility.destroy({
         where: { jobId: parseInt(id) },
       })
 
-      updateData.responsibilities = {
-        create: responsibilities.map((resp, index) => ({
-          title: resp.title,
-          points: resp.points,
-          order: index,
-        })),
+      // Create new responsibilities
+      if (responsibilities.length > 0) {
+        await JobResponsibility.bulkCreate(
+          responsibilities.map((resp, index) => ({
+            jobId: parseInt(id),
+            title: resp.title,
+            points: resp.points,
+            order: index,
+          }))
+        )
       }
     }
 
-    const updatedJob = await prisma.job.update({
-      where: { id: parseInt(id) },
-      data: updateData,
-      include: {
-        responsibilities: {
-          orderBy: { order: "asc" },
+    // Fetch updated job with responsibilities
+    const updatedJob = await Job.findByPk(parseInt(id), {
+      include: [
+        {
+          model: JobResponsibility,
+          as: "responsibilities",
+          attributes: ["id", "title", "points", "order"],
         },
-      },
+      ],
     })
 
-    return res.json(transformJobForResponse(updatedJob as any))
+    return res.json(transformJobForResponse(updatedJob!.toJSON() as any))
   } catch (error) {
     console.error("Error updating job:", error)
     return res.status(500).json({ error: "Failed to update job" })

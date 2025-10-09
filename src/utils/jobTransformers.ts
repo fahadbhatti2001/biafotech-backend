@@ -1,4 +1,4 @@
-import { Job, Prisma } from "@prisma/client"
+import { Job } from "../models/index.js"
 import {
   JobWithResponsibilities,
   TransformedJob,
@@ -11,8 +11,8 @@ export const transformJobForResponse = (
 ): TransformedJob => {
   const transformed: TransformedJob = {
     responsibilities: job.responsibilities || [],
-    requirements: (job.requirements as Prisma.JsonValue) || [],
-    qualifications: (job.qualifications as Prisma.JsonValue) || [],
+    requirements: (job.requirements as string[]) || [],
+    qualifications: (job.qualifications as string[]) || [],
     jobInformation: {
       title: job.title,
       description: job.description,

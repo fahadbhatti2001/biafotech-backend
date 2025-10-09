@@ -1,11 +1,10 @@
 import { Request, Response } from "express"
-import { prisma } from "../../config/database.js"
+import { Job, JobApplication, ApplicationStatus } from "../../models/index.js"
 import {
   transformApplicationForResponse,
   transformApplicationStatusForDB,
 } from "../../utils/applicationTransformers.js"
 import { ApplicationsQuery } from "../../types/index.js"
-import { ApplicationStatus } from "@prisma/client"
 
 // GET /jobs/applications - Fetch job applications with filters
 export const getJobApplications = async (
@@ -22,42 +21,46 @@ export const getJobApplications = async (
       status,
     } = req.query
 
-    const skip = (parseInt(pageNumber) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const offset = (parseInt(pageNumber) - 1) * parseInt(limit)
+    const limitNum = parseInt(limit)
 
     // Build where clause for filtering
-    const where: any = {
-      ...(jobId && { jobId: parseInt(jobId) }),
-      ...(status && {
-        status: transformApplicationStatusForDB(status) as ApplicationStatus,
-      }),
+    const where: any = {}
+    
+    if (jobId) {
+      where.jobId = parseInt(jobId)
+    }
+    
+    if (status) {
+      where.status = transformApplicationStatusForDB(status) as ApplicationStatus
     }
 
-    const applications = await prisma.jobApplication.findMany({
+    const applications = await JobApplication.findAll({
       where,
-      skip,
-      take,
-      orderBy: { [orderBy]: order.toLowerCase() },
-      include: {
-        job: {
-          select: {
-            id: true,
-            title: true,
-            jobType: true,
-          },
+      offset,
+      limit: limitNum,
+      order: [[orderBy, order.toUpperCase()]],
+      include: [
+        {
+          model: Job,
+          as: "job",
+          attributes: ["id", "title", "jobType"],
         },
-      },
+      ],
     })
 
-    const transformedApplications = applications.map((app) => ({
-      ...transformApplicationForResponse(app),
-      job: app.job
-        ? {
-            ...app.job,
-            type: app.job.jobType.toLowerCase().replace("_", "-"),
-          }
-        : null,
-    }))
+    const transformedApplications = applications.map((app: any) => {
+      const appData = app.toJSON()
+      return {
+        ...transformApplicationForResponse(appData),
+        job: appData.job
+          ? {
+              ...appData.job,
+              type: appData.job.jobType.toLowerCase().replace("_", "-"),
+            }
+          : null,
+      }
+    })
 
     return res.json(transformedApplications)
   } catch (error) {

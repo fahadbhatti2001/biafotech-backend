@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { Response } from "express"
-import { prisma } from "../../config/database.js"
+import { User } from "../../models/index.js"
 import { AuthRequest } from "../../types/index.js"
 
 export const login = async (
@@ -19,7 +19,7 @@ export const login = async (
     }
 
     // Find user by email
-    const user = await prisma.user.findUnique({
+    const user = await User.findOne({
       where: { email: email.toLowerCase() },
     })
 

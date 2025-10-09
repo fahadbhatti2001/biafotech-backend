@@ -6,6 +6,7 @@ import { authRoutes } from "./routes/authRoutes.js"
 import { jobRoutes } from "./routes/jobRoutes.js"
 import { applicationRoutes } from "./routes/applicationRoutes.js"
 import { API_ROUTES } from "./constants/routes.js"
+import { syncDatabase } from "./config/database.js"
 
 // Load environment variables
 dotenv.config()
@@ -23,7 +24,13 @@ app.use(API_ROUTES.AUTH, authRoutes)
 app.use(API_ROUTES.JOBS, jobRoutes)
 app.use("/", applicationRoutes) // Applications routes are job-related, so they stay at root level
 
-app.listen(port, "0.0.0.0", (): void => {
-  console.log(`Server running at http://localhost:${port}`)
-  console.log(`Environment: ${nodeEnv}`)
+// Initialize database connection and start server
+syncDatabase().then(() => {
+  app.listen(port, "0.0.0.0", (): void => {
+    console.log(`Server running at http://localhost:${port}`)
+    console.log(`Environment: ${nodeEnv}`)
+  })
+}).catch((error) => {
+  console.error("Failed to initialize database:", error)
+  process.exit(1)
 })

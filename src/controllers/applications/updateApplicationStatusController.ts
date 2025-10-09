@@ -1,11 +1,10 @@
 import { Response } from "express"
-import { prisma } from "../../config/database.js"
+import { Job, JobApplication, ApplicationStatus } from "../../models/index.js"
 import {
   transformApplicationForResponse,
   transformApplicationStatusForDB,
 } from "../../utils/applicationTransformers.js"
 import { ApplicationStatusRequest } from "../../types/index.js"
-import { ApplicationStatus } from "@prisma/client"
 
 // PUT /jobs/applications/:id/status - Update application status
 export const updateApplicationStatus = async (
@@ -34,36 +33,35 @@ export const updateApplicationStatus = async (
     }
 
     // Check if application exists
-    const existingApplication = await prisma.jobApplication.findUnique({
-      where: { id: parseInt(id) },
-    })
+    const existingApplication = await JobApplication.findByPk(parseInt(id))
 
     if (!existingApplication) {
       return res.status(404).json({ error: "Application not found" })
     }
 
-    const updatedApplication = await prisma.jobApplication.update({
-      where: { id: parseInt(id) },
-      data: {
-        status: transformApplicationStatusForDB(status) as ApplicationStatus,
-      },
-      include: {
-        job: {
-          select: {
-            id: true,
-            title: true,
-            jobType: true,
-          },
-        },
-      },
+    // Update application
+    await existingApplication.update({
+      status: transformApplicationStatusForDB(status) as ApplicationStatus,
     })
 
+    // Fetch updated application with job details
+    const updatedApplication = await JobApplication.findByPk(parseInt(id), {
+      include: [
+        {
+          model: Job,
+          as: "job",
+          attributes: ["id", "title", "jobType"],
+        },
+      ],
+    })
+
+    const appData: any = updatedApplication!.toJSON()
     const transformedApplication = {
-      ...transformApplicationForResponse(updatedApplication),
-      job: updatedApplication.job
+      ...transformApplicationForResponse(appData),
+      job: appData.job
         ? {
-            ...updatedApplication.job,
-            type: updatedApplication.job.jobType
+            ...appData.job,
+            type: appData.job.jobType
               .toLowerCase()
               .replace("_", "-"),
           }

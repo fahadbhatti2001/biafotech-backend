@@ -1,6 +1,5 @@
 import { Response } from "express"
-import { Job, JobType } from "@prisma/client"
-import { prisma } from "../../config/database.js"
+import { Job, JobType, JobResponsibility } from "../../models/index.js"
 import { transformJobTypeForDB } from "../../utils/jobTransformers.js"
 import { JobCreateRequest } from "../../types/index.js"
 
@@ -42,36 +41,47 @@ export const createJob = async (
       })
     }
 
-    const job = await prisma.job.create({
-      data: {
-        title,
-        description,
-        salary: salary || null,
-        jobType: transformJobTypeForDB(jobType) as JobType,
-        workExperience,
-        city,
-        state,
-        country,
-        zipCode: zipCode || null,
-        requirements,
-        qualifications,
-        createdBy: parseInt(String(createdBy)),
-        responsibilities: {
-          create: responsibilities.map((resp, index) => ({
-            title: resp.title,
-            points: resp.points || [],
-            order: index,
-          })),
-        },
-      },
-      include: {
-        responsibilities: {
-          orderBy: { order: "asc" },
-        },
-      },
+    // Create job
+    const job = await Job.create({
+      title,
+      description,
+      salary: salary || null,
+      jobType: transformJobTypeForDB(jobType) as JobType,
+      workExperience,
+      city,
+      state,
+      country,
+      zipCode: zipCode || null,
+      requirements,
+      qualifications,
+      createdBy: parseInt(String(createdBy)),
     })
 
-    return res.status(201).json(job)
+    // Create responsibilities
+    if (responsibilities.length > 0) {
+      await JobResponsibility.bulkCreate(
+        responsibilities.map((resp, index) => ({
+          jobId: job.id,
+          title: resp.title,
+          points: resp.points || [],
+          order: index,
+        }))
+      )
+    }
+
+    // Fetch job with responsibilities
+    const jobWithResponsibilities = await Job.findByPk(job.id, {
+      include: [
+        {
+          model: JobResponsibility,
+          as: "responsibilities",
+          attributes: ["id", "title", "points", "order"],
+        },
+      ],
+      order: [[{ model: JobResponsibility, as: "responsibilities" }, "order", "ASC"]],
+    })
+
+    return res.status(201).json(jobWithResponsibilities)
   } catch (error) {
     console.error("Error creating job:", error)
     return res.status(500).json({ error: "Failed to create job" })

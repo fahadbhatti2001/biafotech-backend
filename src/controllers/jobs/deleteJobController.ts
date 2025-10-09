@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { prisma } from "../../config/database.js"
+import { Job } from "../../models/index.js"
 
 // DELETE /jobs/:id - Delete job
 export const deleteJob = async (
@@ -10,9 +10,7 @@ export const deleteJob = async (
     const { id } = req.params
 
     // Check if job exists
-    const existingJob = await prisma.job.findUnique({
-      where: { id: parseInt(id) },
-    })
+    const existingJob = await Job.findByPk(parseInt(id))
 
     if (!existingJob) {
       return res.status(404).json({ error: "Job not found" })
@@ -20,10 +18,7 @@ export const deleteJob = async (
 
     // Soft delete by setting isActive to false instead of hard delete
     // This preserves applications and data integrity
-    await prisma.job.update({
-      where: { id: parseInt(id) },
-      data: { isActive: false },
-    })
+    await existingJob.update({ isActive: false })
 
     return res.json({ message: "Job deleted successfully" })
   } catch (error) {

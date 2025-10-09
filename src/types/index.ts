@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { Job, JobApplication, JobResponsibility, Prisma } from "@prisma/client"
+import { Job, JobApplication, JobResponsibility } from "../models/index.js"
 
 // Database types
 export interface JobWithResponsibilities extends Job {
@@ -13,7 +13,7 @@ export interface ApplicationWithJob extends JobApplication {
   job?: {
     id: number
     title: string
-    type: Prisma.EnumJobTypeFilter<"Job">
+    type: string
   }
 }
 
@@ -120,8 +120,8 @@ export interface ApplicationsQuery {
 export interface TransformedJob {
   id?: number
   responsibilities?: JobResponsibility[]
-  requirements: Prisma.JsonValue
-  qualifications: Prisma.JsonValue
+  requirements: string[]
+  qualifications: string[]
   jobInformation: {
     title: string
     description: string

@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
-import { prisma } from "../../config/database.js"
+import { Op } from "sequelize"
+import { Job, JobResponsibility, JobType } from "../../models/index.js"
 import {
   transformJobForResponse,
   transformJobTypeForDB,
@@ -10,7 +11,6 @@ import {
   TransformedJob,
   JobWithResponsibilities,
 } from "../../types/index.js"
-import { Prisma, JobType } from "@prisma/client"
 
 // GET /jobs/cards - Fetch jobs with full data for frontend display
 export const getJobsAsCards = async (
@@ -31,75 +31,87 @@ export const getJobsAsCards = async (
       search,
     } = req.query
 
-    const skip = (parseInt(pageNumber) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const offset = (parseInt(pageNumber) - 1) * parseInt(limit)
+    const limitNum = parseInt(limit)
 
     // Build where clause for filtering
-    const where: Prisma.JobWhereInput = {
+    const where: any = {
       isActive: true,
-      ...(search && {
-        OR: [
-          { title: { contains: search, mode: Prisma.QueryMode.insensitive } },
-          {
-            description: {
-              contains: search,
-              mode: Prisma.QueryMode.insensitive,
-            },
-          },
-          { city: { contains: search, mode: Prisma.QueryMode.insensitive } },
-          { state: { contains: search, mode: Prisma.QueryMode.insensitive } },
-        ],
-      }),
-      ...(type && { jobType: transformJobTypeForDB(type) as JobType }),
-      ...(city && {
-        city: { contains: city, mode: Prisma.QueryMode.insensitive },
-      }),
-      ...(state && {
-        state: { contains: state, mode: Prisma.QueryMode.insensitive },
-      }),
-      ...(country && {
-        country: { contains: country, mode: Prisma.QueryMode.insensitive },
-      }),
-      ...(workExperience && {
-        workExperience: {
-          contains: workExperience,
-          mode: Prisma.QueryMode.insensitive,
-        },
-      }),
+    }
+
+    if (search) {
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } },
+        { city: { [Op.iLike]: `%${search}%` } },
+        { state: { [Op.iLike]: `%${search}%` } },
+      ]
+    }
+
+    if (type) {
+      where.jobType = transformJobTypeForDB(type) as JobType
+    }
+
+    if (city) {
+      where.city = { [Op.iLike]: `%${city}%` }
+    }
+
+    if (state) {
+      where.state = { [Op.iLike]: `%${state}%` }
+    }
+
+    if (country) {
+      where.country = { [Op.iLike]: `%${country}%` }
+    }
+
+    if (workExperience) {
+      where.workExperience = { [Op.iLike]: `%${workExperience}%` }
     }
 
     // Get total count for pagination
-    const totalCount = await prisma.job.count({ where })
+    const totalCount = await Job.count({ where })
 
     // Get jobs with pagination, ordering, and include relationships
-    const jobs = await prisma.job.findMany({
+    const jobs = await Job.findAll({
       where,
-      skip,
-      take,
-      orderBy: { [orderBy]: order.toLowerCase() },
-      include: {
-        responsibilities: {
-          orderBy: { order: "asc" },
+      offset,
+      limit: limitNum,
+      order: [[orderBy, order.toUpperCase()]],
+      include: [
+        {
+          model: JobResponsibility,
+          as: "responsibilities",
+          attributes: ["id", "title", "points", "order"],
         },
-        _count: {
-          select: {
-            applications: true,
-          },
-        },
-      },
+      ],
+      attributes: {
+        include: [
+          [
+            // Add applications count
+            Job.sequelize!.literal(`(
+              SELECT COUNT(*)
+              FROM "JobApplication"
+              WHERE "JobApplication"."jobId" = "Job"."id"
+            )`),
+            "applicationsCount"
+          ]
+        ]
+      }
     })
 
-    const transformedJobs = jobs.map((job) =>
-      transformJobForResponse(job as JobWithResponsibilities),
-    )
+    const transformedJobs = jobs.map((job: any) => {
+      const jobData = job.toJSON()
+      jobData._count = { applications: parseInt(jobData.applicationsCount) || 0 }
+      return transformJobForResponse(jobData as JobWithResponsibilities)
+    })
 
     return res.json({
       count: totalCount,
       rows: transformedJobs,
       pagination: {
         currentPage: parseInt(pageNumber),
-        totalPages: Math.ceil(totalCount / take),
-        limit: take,
+        totalPages: Math.ceil(totalCount / limitNum),
+        limit: limitNum,
         totalCount,
       },
     })

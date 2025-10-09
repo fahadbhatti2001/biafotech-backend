@@ -1,5 +1,5 @@
 import { Response } from "express"
-import { prisma } from "../../config/database.js"
+import { Job, JobApplication } from "../../models/index.js"
 import { transformApplicationForResponse } from "../../utils/applicationTransformers.js"
 import { JobApplicationRequest } from "../../types/index.js"
 
@@ -20,9 +20,7 @@ export const applyToJob = async (
     }
 
     // Check if job exists and is active
-    const job = await prisma.job.findUnique({
-      where: { id: parseInt(jobId) },
-    })
+    const job = await Job.findByPk(parseInt(jobId))
 
     if (!job || !job.isActive) {
       return res
@@ -31,7 +29,7 @@ export const applyToJob = async (
     }
 
     // Check if user already applied to this job
-    const existingApplication = await prisma.jobApplication.findFirst({
+    const existingApplication = await JobApplication.findOne({
       where: {
         jobId: parseInt(jobId),
         applicantEmail: applicantEmail,
@@ -44,14 +42,12 @@ export const applyToJob = async (
         .json({ error: "You have already applied to this job" })
     }
 
-    const application = await prisma.jobApplication.create({
-      data: {
-        jobId: parseInt(jobId),
-        applicantName,
-        applicantEmail,
-        resumeUrl: resumeUrl || null,
-        coverLetter: coverLetter || null,
-      },
+    const application = await JobApplication.create({
+      jobId: parseInt(jobId),
+      applicantName,
+      applicantEmail,
+      resumeUrl: resumeUrl || null,
+      coverLetter: coverLetter || null,
     })
 
     return res.status(201).json(transformApplicationForResponse(application))
