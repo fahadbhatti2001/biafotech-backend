@@ -72,7 +72,7 @@ export interface JobUpdateRequest extends Request {
 
 export interface JobApplicationRequest extends Request {
   params: {
-    id: string
+    jobId: string
   }
   body: {
     applicantName: string

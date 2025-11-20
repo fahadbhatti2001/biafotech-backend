@@ -51,20 +51,30 @@ export const getJobApplications = async (
 
     const transformedApplications = applications.map((app: any) => {
       const appData = app.toJSON()
+      const transformed = transformApplicationForResponse(appData)
       return {
-        ...transformApplicationForResponse(appData),
-        job: appData.job
-          ? {
-              ...appData.job,
-              type: appData.job.jobType.toLowerCase().replace("_", "-"),
-            }
-          : null,
+        id: transformed.id,
+        jobId: transformed.jobId,
+        applicantName: transformed.applicantName,
+        applicantEmail: transformed.applicantEmail,
+        coverLetter: transformed.coverLetter,
+        status: transformed.status,
+        createdAt: transformed.createdAt,
+        updatedAt: transformed.updatedAt,
       }
     })
 
-    return res.json(transformedApplications)
+    return res.json({
+      status: true,
+      message: "Success",
+      data: transformedApplications,
+    })
   } catch (error) {
     console.error("Error fetching applications:", error)
-    return res.status(500).json({ error: "Failed to fetch applications" })
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+      data: null,
+    })
   }
 }

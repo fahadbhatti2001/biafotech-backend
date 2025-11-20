@@ -5,6 +5,8 @@ import { healthRoutes } from "./routes/healthRoutes.js"
 import { authRoutes } from "./routes/authRoutes.js"
 import { jobRoutes } from "./routes/jobRoutes.js"
 import { applicationRoutes } from "./routes/applicationRoutes.js"
+import { newsRoutes } from "./routes/newsRoutes.js"
+import { portfolioRoutes } from "./routes/portfolioRoutes.js"
 import { API_ROUTES } from "./constants/routes.js"
 import { syncDatabase } from "./config/database.js"
 
@@ -22,6 +24,8 @@ app.use(cors())
 app.use(API_ROUTES.HEALTH, healthRoutes)
 app.use(API_ROUTES.AUTH, authRoutes)
 app.use(API_ROUTES.JOBS, jobRoutes)
+app.use(API_ROUTES.NEWS, newsRoutes)
+app.use(API_ROUTES.PORTFOLIO, portfolioRoutes)
 app.use("/", applicationRoutes) // Applications routes are job-related, so they stay at root level
 
 // Initialize database connection and start server

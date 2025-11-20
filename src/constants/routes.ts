@@ -5,6 +5,8 @@ export const API_ROUTES = {
   AUTH: "/auth",
   JOBS: "/jobs",
   APPLICATIONS: "/applications",
+  NEWS: "/news",
+  PORTFOLIO: "/portfolio",
 } as const
 
 // Specific endpoints
@@ -28,9 +30,27 @@ export const JOB_ROUTES = {
 
 export const APPLICATION_ROUTES = {
   // Job application operations
-  APPLY_TO_JOB: "/jobs/:id/apply",
+  APPLY_TO_JOB: "/jobs/:jobId/apply",
   GET_JOB_APPLICATIONS: "/jobs/applications",
   UPDATE_APPLICATION_STATUS: "/jobs/applications/:id/status",
+} as const
+
+export const NEWS_ROUTES = {
+  // News CRUD operations
+  GET_ALL: "/",
+  GET_BY_ID: "/:id",
+  CREATE: "/",
+  UPDATE: "/:id",
+  DELETE: "/:id",
+} as const
+
+export const PORTFOLIO_ROUTES = {
+  // Portfolio CRUD operations
+  GET_ALL: "/",
+  GET_BY_ID: "/:id",
+  CREATE: "/",
+  UPDATE: "/:id",
+  DELETE: "/:id",
 } as const
 
 // Full route paths (for reference)
@@ -53,4 +73,18 @@ export const FULL_ROUTES = {
   APPLY_TO_JOB: APPLICATION_ROUTES.APPLY_TO_JOB,
   GET_JOB_APPLICATIONS: APPLICATION_ROUTES.GET_JOB_APPLICATIONS,
   UPDATE_APPLICATION_STATUS: APPLICATION_ROUTES.UPDATE_APPLICATION_STATUS,
+
+  // News
+  GET_ALL_NEWS: `${API_ROUTES.NEWS}${NEWS_ROUTES.GET_ALL}`,
+  GET_NEWS_BY_ID: `${API_ROUTES.NEWS}${NEWS_ROUTES.GET_BY_ID}`,
+  CREATE_NEWS: `${API_ROUTES.NEWS}${NEWS_ROUTES.CREATE}`,
+  UPDATE_NEWS: `${API_ROUTES.NEWS}${NEWS_ROUTES.UPDATE}`,
+  DELETE_NEWS: `${API_ROUTES.NEWS}${NEWS_ROUTES.DELETE}`,
+
+  // Portfolio
+  GET_ALL_PORTFOLIO: `${API_ROUTES.PORTFOLIO}${PORTFOLIO_ROUTES.GET_ALL}`,
+  GET_PORTFOLIO_BY_ID: `${API_ROUTES.PORTFOLIO}${PORTFOLIO_ROUTES.GET_BY_ID}`,
+  CREATE_PORTFOLIO: `${API_ROUTES.PORTFOLIO}${PORTFOLIO_ROUTES.CREATE}`,
+  UPDATE_PORTFOLIO: `${API_ROUTES.PORTFOLIO}${PORTFOLIO_ROUTES.UPDATE}`,
+  DELETE_PORTFOLIO: `${API_ROUTES.PORTFOLIO}${PORTFOLIO_ROUTES.DELETE}`,
 } as const

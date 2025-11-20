@@ -16,7 +16,11 @@ export const updateApplicationStatus = async (
     const { status } = req.body
 
     if (!status) {
-      return res.status(400).json({ error: "Status is required" })
+      return res.status(400).json({
+        status: false,
+        message: "Status is required",
+        data: null,
+      })
     }
 
     const validStatuses = [
@@ -28,7 +32,9 @@ export const updateApplicationStatus = async (
     ]
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
-        error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+        status: false,
+        message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+        data: null,
       })
     }
 
@@ -36,7 +42,11 @@ export const updateApplicationStatus = async (
     const existingApplication = await JobApplication.findByPk(parseInt(id))
 
     if (!existingApplication) {
-      return res.status(404).json({ error: "Application not found" })
+      return res.status(404).json({
+        status: false,
+        message: "Application not found",
+        data: null,
+      })
     }
 
     // Update application
@@ -56,23 +66,28 @@ export const updateApplicationStatus = async (
     })
 
     const appData: any = updatedApplication!.toJSON()
-    const transformedApplication = {
-      ...transformApplicationForResponse(appData),
-      job: appData.job
-        ? {
-            ...appData.job,
-            type: appData.job.jobType
-              .toLowerCase()
-              .replace("_", "-"),
-          }
-        : null,
-    }
+    const transformed = transformApplicationForResponse(appData)
 
-    return res.json(transformedApplication)
+    return res.json({
+      status: true,
+      message: "Application status updated successfully",
+      data: {
+        id: transformed.id,
+        jobId: transformed.jobId,
+        applicantName: transformed.applicantName,
+        applicantEmail: transformed.applicantEmail,
+        coverLetter: transformed.coverLetter,
+        status: transformed.status,
+        createdAt: transformed.createdAt,
+        updatedAt: transformed.updatedAt,
+      },
+    })
   } catch (error) {
     console.error("Error updating application status:", error)
-    return res
-      .status(500)
-      .json({ error: "Failed to update application status" })
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+      data: null,
+    })
   }
 }

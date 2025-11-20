@@ -1,21 +1,21 @@
 {
   "development": {
-    "username": "fahad",
-    "password": "12345678",
+    "username": "postgres",
+    "password": "123456",
     "database": "biafotech",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "test": {
-    "username": "fahad",
-    "password": "12345678",
+    "username": "postgres",
+    "password": "123456",
     "database": "biafotech",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "production": {
-    "username": "fahad",
-    "password": "12345678",
+    "username": "postgres",
+    "password": "123456",
     "database": "biafotech",
     "host": "127.0.0.1",
     "dialect": "postgres"

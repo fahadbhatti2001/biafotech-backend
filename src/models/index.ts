@@ -4,6 +4,8 @@ import { User, initUser } from "./User.js"
 import { Job, initJob } from "./Job.js"
 import { JobResponsibility, initJobResponsibility } from "./JobResponsibility.js"
 import { JobApplication, initJobApplication } from "./JobApplication.js"
+import { News, initNews } from "./News.js"
+import { Portfolio, initPortfolio } from "./Portfolio.js"
 
 dotenv.config()
 
@@ -27,6 +29,8 @@ initUser(sequelize)
 initJob(sequelize)
 initJobResponsibility(sequelize)
 initJobApplication(sequelize)
+initNews(sequelize)
+initPortfolio(sequelize)
 
 // Define associations
 Job.hasMany(JobResponsibility, {
@@ -67,7 +71,7 @@ export const syncDatabase = async () => {
 }
 
 // Export models
-export { User, Job, JobResponsibility, JobApplication }
+export { User, Job, JobResponsibility, JobApplication, News, Portfolio }
 
 // Export enums
 export { UserRole } from "./User.js"
